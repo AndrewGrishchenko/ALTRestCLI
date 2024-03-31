@@ -7,7 +7,7 @@ public class PackageMessage {
     String release;
     String arch;
     String disttag;
-    int buildTime;
+    int buildtime;
     String source;
 
     public String getName () {
@@ -58,12 +58,12 @@ public class PackageMessage {
         this.disttag = disttag;
     }
 
-    public int getBuildTime () {
-        return buildTime;
+    public int getBuildtime () {
+        return buildtime;
     }
 
-    public void setBuildTime (int buildTime) {
-        this.buildTime = buildTime;
+    public void setBuildtime (int buildtime) {
+        this.buildtime = buildtime;
     }
 
     public String getSource () {
@@ -82,7 +82,7 @@ public class PackageMessage {
         + "\nrelease=" + release
         + "\narch=" + arch
         + "\ndisttag=" + disttag
-        + "\nbuildTime=" + String.valueOf(buildTime)
+        + "\nbuildTime=" + String.valueOf(buildtime)
         + "\nsource=" + source + "}";
     }
 }

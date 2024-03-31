@@ -1,12 +1,18 @@
 package restclient.restclient.models;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class BranchBinaryPackagesMessage {
     Map<String, String> request_args;
     int length;
     List<PackageMessage> packages;
+
+    @JsonIgnore
+    HashMap<NameArchPair, PackageMessage> packagesMap = new HashMap<NameArchPair, PackageMessage>();
 
     public Map<String, String> getRequest_args () {
         return request_args;
@@ -30,6 +36,13 @@ public class BranchBinaryPackagesMessage {
 
     public void setPackages (List<PackageMessage> packages) {
         this.packages = packages;
+        for (PackageMessage pkg : packages) {
+            packagesMap.put(new NameArchPair(pkg.getName(), pkg.getArch()), pkg);
+        }
+    }
+
+    public PackageMessage getPackageByName (NameArchPair pair) {
+        return packagesMap.get(pair);
     }
 
     @Override

@@ -12,13 +12,22 @@ public class BranchShell {
         this.restService = restService;
     }
 
-    @ShellMethod(key = "hello-to", value = "Say hello to username")
-    public String helloTo(@ShellOption({"username", "u"}) String username) {
-        return restService.helloTo(username);
+    @ShellMethod(key = "branchDiff", value = "writes json containing all packages present in first branch, but not in second")
+    public String branchDiff (
+        @ShellOption(help = "first branch") String branch1,
+        @ShellOption(help = "second branch") String branch2,
+        @ShellOption(help = "JSON filename") String fileName
+    ) {
+        return restService.ExportBranchBinaryPackages(branch1, branch2, fileName);
     }
 
-    @ShellMethod(key = "get", value = "get")
-    public String get() {
-        return restService.ExportBranchBinaryPackages("p9");
+    @ShellMethod(key = "branchDiffArch", value = "writes json containing all packages present in first branch, but not in second for specified branch")
+    public String branchDiffArch (
+        @ShellOption(help = "first branch") String branch1,
+        @ShellOption(help = "second branch") String branch2,
+        @ShellOption(help = "arch") String arch,
+        @ShellOption(help = "JSON filename") String fileName
+    ) {
+        return restService.ExportBranchBinaryPackages(branch1, branch2, arch, fileName);
     }
 }
