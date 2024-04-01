@@ -55,6 +55,7 @@ public class RestService {
         for (int i = 0; i < firstPackagesMessageSize; i++) {
             packages1[i].name = firstPackagesList.get(i).getName();
             packages1[i].arch = firstPackagesList.get(i).getArch();
+            packages1[i].version = firstPackagesList.get(i).getVersion();
         }
 
 
@@ -68,6 +69,7 @@ public class RestService {
         for (int i = 0; i < secondPackagesMessageSize; i++) {
             packages2[i].name = secondPackagesList.get(i).getName();
             packages2[i].arch = secondPackagesList.get(i).getArch();
+            packages2[i].version = secondPackagesList.get(i).getVersion();
         }
 
 
@@ -92,7 +94,7 @@ public class RestService {
         writeJson(fileName, responseMessage);
     }
 
-    public String ExportBranchBinaryPackages (String branch1, String branch2, String fileName) {
+    public String branchDiff (String branch1, String branch2, String fileName) {
         BranchBinaryPackagesMessage firstPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch1)
         .retrieve().body(BranchBinaryPackagesMessage.class);
 
@@ -104,7 +106,7 @@ public class RestService {
         return "JSON writed to " + fileName;
     }
 
-    public String ExportBranchBinaryPackages (String branch1, String branch2, String arch, String fileName) {
+    public String branchDiff (String branch1, String branch2, String arch, String fileName) {
         BranchBinaryPackagesMessage firstPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch1 + "?arch=" + arch)
         .retrieve().body(BranchBinaryPackagesMessage.class);
 
@@ -112,6 +114,62 @@ public class RestService {
         .retrieve().body(BranchBinaryPackagesMessage.class);
         
         presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+
+        return "JSON writed to " + fileName;
+    }
+
+    private void versionDiff (BranchBinaryPackagesMessage firstPackagesMessage, BranchBinaryPackagesMessage secondPackagesMessage, String fileName) {
+        List<PackageMessage> firstPackagesList = firstPackagesMessage.getPackages();
+        int firstPackagesMessageSize = firstPackagesList.size();
+        
+        BranchDiffLibrary.MessageStruct.ByReference packages1Ref = new BranchDiffLibrary.MessageStruct.ByReference();
+        BranchDiffLibrary.MessageStruct[] packages1 = (BranchDiffLibrary.MessageStruct[]) packages1Ref.toArray(firstPackagesMessageSize);
+
+        for (int i = 0; i < firstPackagesMessageSize; i++) {
+            packages1[i].name = firstPackagesList.get(i).getName();
+            packages1[i].arch = firstPackagesList.get(i).getArch();
+            packages1[i].version = firstPackagesList.get(i).getVersion();
+        }
+
+
+        List<PackageMessage> secondPackagesList = secondPackagesMessage.getPackages();
+        int secondPackagesMessageSize = secondPackagesList.size();
+        
+        BranchDiffLibrary.MessageStruct.ByReference packages2Ref = new BranchDiffLibrary.MessageStruct.ByReference();
+        BranchDiffLibrary.MessageStruct[] packages2 = (BranchDiffLibrary.MessageStruct[]) packages2Ref.toArray(secondPackagesMessageSize);
+
+        for (int i = 0; i < secondPackagesMessageSize; i++) {
+            packages2[i].name = secondPackagesList.get(i).getName();
+            packages2[i].arch = secondPackagesList.get(i).getArch();
+            packages2[i].version = secondPackagesList.get(i).getVersion();
+        }
+        
+        PointerByReference valsRefPtr = new PointerByReference();
+        IntByReference numValsRef = new IntByReference();
+        BranchDiffLibrary.INSTANCE.versionDiff(packages1Ref, firstPackagesMessageSize, packages2Ref, secondPackagesMessageSize, valsRefPtr, numValsRef);
+        int numVals = numValsRef.getValue();
+        Pointer pVals = valsRefPtr.getValue();
+        BranchDiffLibrary.MessageStruct valsRef = new BranchDiffLibrary.MessageStruct(pVals);
+        valsRef.read();
+        BranchDiffLibrary.MessageStruct[] vals = (BranchDiffLibrary.MessageStruct[]) valsRef.toArray(numVals);
+
+        ResponseMessage responseMessage = new ResponseMessage();
+        for (BranchDiffLibrary.MessageStruct val : vals) {
+            if (val.name == null) break;
+            responseMessage.addPackage(firstPackagesMessage.getPackageByName(new NameArchPair(val.name, val.arch)));
+        }
+
+        writeJson(fileName, responseMessage);
+    }
+
+    public String branchDiffVersion (String branch1, String branch2, String fileName) {
+        BranchBinaryPackagesMessage firstPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch1)
+        .retrieve().body(BranchBinaryPackagesMessage.class);
+
+        BranchBinaryPackagesMessage secondPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch2)
+        .retrieve().body(BranchBinaryPackagesMessage.class);
+
+        versionDiff(firstPackagesMessage, secondPackagesMessage, fileName);
 
         return "JSON writed to " + fileName;
     }
