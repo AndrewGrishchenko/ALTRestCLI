@@ -1,36 +1,49 @@
 package restclient.restclient.models;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class ResponseMessage {
-    private HashMap<String, List<PackageMessage>> packages = new HashMap<String, List<PackageMessage>>();
+    private String responseType;
+    private String branch1;
+    private String branch2;
+    private int totalPackages;
+    private HashMap<String, ArchPackagesMessage> arches = new HashMap<String, ArchPackagesMessage>();
 
-    public void addPackage (PackageMessage packageMessage) {
-        if (!packages.containsKey(packageMessage.getArch())) 
-            packages.put(packageMessage.getArch(), new ArrayList<PackageMessage>());
-        
-        packages.get(packageMessage.getArch()).add(packageMessage);
+    public ResponseMessage (String responseType) {
+        this.responseType = responseType;
     }
 
-    public HashMap<String, List<PackageMessage>> getPackages () {
-        return packages;
-    }
-
-    @Override
-    public String toString () {
-        String s = "";
-        for (String key : packages.keySet()) {
-            s += "USING ARCH= " + key;
-            // for (PackageMessage pkg : packages.get(key)) {
-            //     s += pkg.toString();
-            // }
-            for (int i = 0; i < packages.get(key).size(); i++) {
-                if (i == 5) break;
-                s += "\n" + packages.get(key).get(i).toString();
-            }
+    public void addPackage (PackageMessage pkg) {
+        if (arches.containsKey(pkg.getArch())) {
+            arches.get(pkg.getArch()).addPackage(pkg);
+        } else {
+            arches.put(pkg.getArch(), new ArchPackagesMessage(pkg));
         }
-        return s;
+        totalPackages++;
+    }
+
+    public String getResponseType () {
+        return responseType;
+    }
+
+    public String getBranch1 () {
+        return branch1;
+    }
+
+    public String getBranch2 () {
+        return branch2;
+    }
+
+    public void setBranches (String branch1, String branch2) {
+        this.branch1 = branch1;
+        this.branch2 = branch2;
+    }
+
+    public int getTotalPackages () {
+        return totalPackages;
+    }
+
+    public HashMap<String, ArchPackagesMessage> getArches () {
+        return arches;
     }
 }

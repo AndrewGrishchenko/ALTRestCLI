@@ -18,6 +18,7 @@ import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 
 import restclient.restclient.models.BranchBinaryPackagesMessage;
+import restclient.restclient.models.CombinedResponseMessage;
 import restclient.restclient.models.NameArchPair;
 import restclient.restclient.models.PackageMessage;
 import restclient.restclient.models.ResponseMessage;
@@ -46,7 +47,26 @@ public class RestService {
         }
     }
 
-    private void presenceDiff (BranchBinaryPackagesMessage firstPackagesMessage, BranchBinaryPackagesMessage secondPackagesMessage, String fileName) {
+    private void writeJson (String fileName, CombinedResponseMessage combinedResponseMessage) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+            String json = mapper.writeValueAsString(combinedResponseMessage);
+
+            FileWriter fileWriter = new FileWriter(fileName);
+            PrintWriter printWriter = new PrintWriter(fileWriter);
+            printWriter.print(json);
+            printWriter.close();
+
+            RestclientApplication.logger.info("JSON writed to " + fileName);
+        } catch (JsonProcessingException e) {
+            RestclientApplication.logger.error("JSON process error!");
+        } catch (IOException e) {
+            RestclientApplication.logger.error("I/O writing error!");
+        }
+    }
+
+    private ResponseMessage presenceDiff (BranchBinaryPackagesMessage firstPackagesMessage, BranchBinaryPackagesMessage secondPackagesMessage, String fileName) {
         List<PackageMessage> firstPackagesList = firstPackagesMessage.getPackages();
         int firstPackagesMessageSize = firstPackagesList.size();
         
@@ -85,43 +105,50 @@ public class RestService {
         valsRef.read();
         BranchDiffLibrary.MessageStruct[] vals = (BranchDiffLibrary.MessageStruct[]) valsRef.toArray(numVals);
         
-        ResponseMessage responseMessage = new ResponseMessage();
+        ResponseMessage responseMessage = new ResponseMessage("presence");
         for (BranchDiffLibrary.MessageStruct val : vals) {
             if (val.name == null) break;
-            responseMessage.addPackage(firstPackagesMessage.getPackageByName(new NameArchPair(val.name, val.arch)));
+            responseMessage.addPackage(firstPackagesMessage.getPackageByNameArch(new NameArchPair(val.name, val.arch)));
         }
 
         BranchDiffLibrary.INSTANCE.cleanupMessageStruct(pVals);
         
-        writeJson(fileName, responseMessage);
+        return responseMessage;
     }
 
     public void branchDiff (String branch1, String branch2, String fileName) {
-        
-        RestclientApplication.logger.info("Retrieving \"" + branch1 + "\" packages...");
+        RestclientApplication.logger.info("Retrieving \"" + branch1 + "\" branch packages...");
         BranchBinaryPackagesMessage firstPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch1)
         .retrieve().body(BranchBinaryPackagesMessage.class);
         RestclientApplication.logger.info("Retrieved " + String.valueOf(firstPackagesMessage.getLength()) + " packages");
 
-        RestclientApplication.logger.info("Retrieving \"" + branch2 + "\" packages...");
+        RestclientApplication.logger.info("Retrieving \"" + branch2 + "\" branch packages...");
         BranchBinaryPackagesMessage secondPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch2)
         .retrieve().body(BranchBinaryPackagesMessage.class);
         RestclientApplication.logger.info("Retrieved " + String.valueOf(secondPackagesMessage.getLength()) + " packages");
 
-        presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        ResponseMessage responseMessage = presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        responseMessage.setBranches(branch1, branch2);
+        writeJson(fileName, responseMessage);
     }
 
     public void branchDiff (String branch1, String branch2, String arch, String fileName) {
+        RestclientApplication.logger.info("Retrieving \"" + branch1 + "\" branch packages...");
         BranchBinaryPackagesMessage firstPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch1 + "?arch=" + arch)
         .retrieve().body(BranchBinaryPackagesMessage.class);
+        RestclientApplication.logger.info("Retrieved " + String.valueOf(firstPackagesMessage.getLength()) + " packages");
 
+        RestclientApplication.logger.info("Retrieving \"" + branch2 + "\" branch packages...");
         BranchBinaryPackagesMessage secondPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch2 + "?arch=" + arch)
         .retrieve().body(BranchBinaryPackagesMessage.class);
+        RestclientApplication.logger.info("Retrieved " + String.valueOf(secondPackagesMessage.getLength()) + " packages");
         
-        presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        ResponseMessage responseMessage = presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        responseMessage.setBranches(branch1, branch2);
+        writeJson(fileName, responseMessage);
     }
 
-    private void versionDiff (BranchBinaryPackagesMessage firstPackagesMessage, BranchBinaryPackagesMessage secondPackagesMessage, String fileName) {
+    private ResponseMessage versionDiff (BranchBinaryPackagesMessage firstPackagesMessage, BranchBinaryPackagesMessage secondPackagesMessage, String fileName) {
         List<PackageMessage> firstPackagesList = firstPackagesMessage.getPackages();
         int firstPackagesMessageSize = firstPackagesList.size();
         
@@ -159,23 +186,57 @@ public class RestService {
         valsRef.read();
         BranchDiffLibrary.MessageStruct[] vals = (BranchDiffLibrary.MessageStruct[]) valsRef.toArray(numVals);
 
-        ResponseMessage responseMessage = new ResponseMessage();
+        ResponseMessage responseMessage = new ResponseMessage("version");
         for (BranchDiffLibrary.MessageStruct val : vals) {
             if (val.name == null) break;
-            responseMessage.addPackage(firstPackagesMessage.getPackageByName(new NameArchPair(val.name, val.arch)));
+            responseMessage.addPackage(firstPackagesMessage.getPackageByNameArch(new NameArchPair(val.name, val.arch)));
         }
 
-        writeJson(fileName, responseMessage);
+        BranchDiffLibrary.INSTANCE.cleanupMessageStruct(pVals);
+
+        return responseMessage;
     }
 
     public void branchDiffVersion (String branch1, String branch2, String fileName) {
+        RestclientApplication.logger.info("Retrieving \"" + branch1 + "\" branch packages...");
         BranchBinaryPackagesMessage firstPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch1)
         .retrieve().body(BranchBinaryPackagesMessage.class);
-
+        RestclientApplication.logger.info("Retrieved " + String.valueOf(firstPackagesMessage.getLength()) + " packages");
+     
+        RestclientApplication.logger.info("Retrieving \"" + branch2 + "\" branch packages...");
         BranchBinaryPackagesMessage secondPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch2)
         .retrieve().body(BranchBinaryPackagesMessage.class);
+        RestclientApplication.logger.info("Retrieved " + String.valueOf(secondPackagesMessage.getLength()) + " packages");
 
-        versionDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        ResponseMessage responseMessage = versionDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        responseMessage.setBranches(branch1, branch2);
+        writeJson(fileName, responseMessage);
+    }
+
+    public void combinedBranchDiff (String branch1, String branch2, String fileName) {
+        RestclientApplication.logger.info("Retrieving \"" + branch1 + "\" branch packages...");
+        BranchBinaryPackagesMessage firstPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch1)
+        .retrieve().body(BranchBinaryPackagesMessage.class);
+        RestclientApplication.logger.info("Retrieved " + String.valueOf(firstPackagesMessage.getLength()) + " packages");
+
+        RestclientApplication.logger.info("Retrieving \"" + branch2 + "\" branch packages...");
+        BranchBinaryPackagesMessage secondPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch2)
+        .retrieve().body(BranchBinaryPackagesMessage.class);
+        RestclientApplication.logger.info("Retrieved " + String.valueOf(secondPackagesMessage.getLength()) + " packages");
+
+        CombinedResponseMessage combinedResponseMessage = new CombinedResponseMessage();
+
+        ResponseMessage presenceResponse1 = presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        presenceResponse1.setBranches(branch1, branch2);
+
+        ResponseMessage presenceResponse2 = presenceDiff(secondPackagesMessage, firstPackagesMessage, fileName);
+        presenceResponse2.setBranches(branch2, branch1);
+
+        ResponseMessage versionResponse = versionDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        versionResponse.setBranches(branch1, branch2);
+
+        combinedResponseMessage.addResponses(presenceResponse1, presenceResponse2, versionResponse);
+        writeJson(fileName, combinedResponseMessage);
     }
 
     @Bean

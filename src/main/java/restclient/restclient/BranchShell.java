@@ -39,4 +39,13 @@ public class BranchShell {
     ) {
         restService.branchDiffVersion(branch1, branch2, fileName);
     }
+
+    @ShellMethod(key = "combinedBranchDiff", value = "combined json of 'branchDiff' and 'branchDiffVersion'")
+    public void combinedBranchDiff (
+        @ShellOption(help = "first branch name") String branch1,
+        @ShellOption(help = "second branch name") String branch2,
+        @ShellOption(help = "JSON filename") String fileName
+    ) {
+        restService.combinedBranchDiff(branch1, branch2, fileName);
+    }
 }

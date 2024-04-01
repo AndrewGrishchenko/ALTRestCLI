@@ -41,7 +41,7 @@ public class BranchBinaryPackagesMessage {
         }
     }
 
-    public PackageMessage getPackageByName (NameArchPair pair) {
+    public PackageMessage getPackageByNameArch (NameArchPair pair) {
         return packagesMap.get(pair);
     }
 
