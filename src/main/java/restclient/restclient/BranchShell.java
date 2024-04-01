@@ -16,7 +16,7 @@ public class BranchShell {
     public void branchDiff (
         @ShellOption(help = "first branch name") String branch1,
         @ShellOption(help = "second branch name") String branch2,
-        @ShellOption(help = "JSON filename") String fileName
+        @ShellOption(help = "JSON filename", defaultValue = "response.json") String fileName
     ) {
         restService.branchDiff(branch1, branch2, fileName);
     }
@@ -26,7 +26,7 @@ public class BranchShell {
         @ShellOption(help = "first branch name") String branch1,
         @ShellOption(help = "second branch name") String branch2,
         @ShellOption(help = "arch") String arch,
-        @ShellOption(help = "JSON filename") String fileName
+        @ShellOption(help = "JSON filename", defaultValue = "response.json") String fileName
     ) {
         restService.branchDiff(branch1, branch2, arch, fileName);
     }
@@ -35,7 +35,7 @@ public class BranchShell {
     public void branchDiffVersion (
         @ShellOption(help = "first branch name") String branch1,
         @ShellOption(help = "second branch name") String branch2,
-        @ShellOption(help = "JSON filename") String fileName
+        @ShellOption(help = "JSON filename", defaultValue = "response.json") String fileName
     ) {
         restService.branchDiffVersion(branch1, branch2, fileName);
     }
@@ -44,7 +44,7 @@ public class BranchShell {
     public void combinedBranchDiff (
         @ShellOption(help = "first branch name") String branch1,
         @ShellOption(help = "second branch name") String branch2,
-        @ShellOption(help = "JSON filename") String fileName
+        @ShellOption(help = "JSON filename", defaultValue = "response.json") String fileName
     ) {
         restService.combinedBranchDiff(branch1, branch2, fileName);
     }
