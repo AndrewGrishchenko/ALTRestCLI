@@ -13,30 +13,30 @@ public class BranchShell {
     }
 
     @ShellMethod(key = "branchDiff", value = "writes json containing all packages present in first branch, but not in second")
-    public String branchDiff (
+    public void branchDiff (
         @ShellOption(help = "first branch name") String branch1,
         @ShellOption(help = "second branch name") String branch2,
         @ShellOption(help = "JSON filename") String fileName
     ) {
-        return restService.branchDiff(branch1, branch2, fileName);
+        restService.branchDiff(branch1, branch2, fileName);
     }
 
     @ShellMethod(key = "branchDiffArch", value = "writes json containing all packages present in first branch, but not in second for specified branch")
-    public String branchDiffArch (
+    public void branchDiffArch (
         @ShellOption(help = "first branch name") String branch1,
         @ShellOption(help = "second branch name") String branch2,
         @ShellOption(help = "arch") String arch,
         @ShellOption(help = "JSON filename") String fileName
     ) {
-        return restService.branchDiff(branch1, branch2, arch, fileName);
+        restService.branchDiff(branch1, branch2, arch, fileName);
     }
 
     @ShellMethod(key = "branchDiffVersion", value = "writes json containing packages which version in the first branch higher than in the second")
-    public String branchDiffVersion (
+    public void branchDiffVersion (
         @ShellOption(help = "first branch name") String branch1,
         @ShellOption(help = "second branch name") String branch2,
         @ShellOption(help = "JSON filename") String fileName
     ) {
-        return restService.branchDiffVersion(branch1, branch2, fileName);
+        restService.branchDiffVersion(branch1, branch2, fileName);
     }
 }

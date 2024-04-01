@@ -37,18 +37,19 @@ public class RestService {
             PrintWriter printWriter = new PrintWriter(fileWriter);
             printWriter.print(json);
             printWriter.close();
+
+            RestclientApplication.logger.info("JSON writed to " + fileName);
         } catch (JsonProcessingException e) {
-            System.out.println("json error");
+            RestclientApplication.logger.error("JSON process error!");
         } catch (IOException e) {
-            System.out.println("io error");
+            RestclientApplication.logger.error("I/O writing error!");
         }
     }
 
     private void presenceDiff (BranchBinaryPackagesMessage firstPackagesMessage, BranchBinaryPackagesMessage secondPackagesMessage, String fileName) {
         List<PackageMessage> firstPackagesList = firstPackagesMessage.getPackages();
         int firstPackagesMessageSize = firstPackagesList.size();
-        System.out.println("retrieved FIRST " + String.valueOf(firstPackagesMessageSize) + " packages");
-
+        
         BranchDiffLibrary.MessageStruct.ByReference packages1Ref = new BranchDiffLibrary.MessageStruct.ByReference();
         BranchDiffLibrary.MessageStruct[] packages1 = (BranchDiffLibrary.MessageStruct[]) packages1Ref.toArray(firstPackagesMessageSize);
 
@@ -61,8 +62,7 @@ public class RestService {
 
         List<PackageMessage> secondPackagesList = secondPackagesMessage.getPackages();
         int secondPackagesMessageSize = secondPackagesList.size();
-        System.out.println("retrieved SECOND " + String.valueOf(secondPackagesMessageSize) + " packages");
-
+        
         BranchDiffLibrary.MessageStruct.ByReference packages2Ref = new BranchDiffLibrary.MessageStruct.ByReference();
         BranchDiffLibrary.MessageStruct[] packages2 = (BranchDiffLibrary.MessageStruct[]) packages2Ref.toArray(secondPackagesMessageSize);
 
@@ -75,14 +75,16 @@ public class RestService {
 
         PointerByReference valsRefPtr = new PointerByReference();
         IntByReference numValsRef = new IntByReference();
+
+        RestclientApplication.logger.info("Calculating...");
         BranchDiffLibrary.INSTANCE.presenceDiff(packages1Ref, firstPackagesMessageSize, packages2Ref, secondPackagesMessageSize, valsRefPtr, numValsRef);
+        
         int numVals = numValsRef.getValue();
         Pointer pVals = valsRefPtr.getValue();
         BranchDiffLibrary.MessageStruct valsRef = new BranchDiffLibrary.MessageStruct(pVals);
         valsRef.read();
         BranchDiffLibrary.MessageStruct[] vals = (BranchDiffLibrary.MessageStruct[]) valsRef.toArray(numVals);
         
-        System.out.println("retrieved " + String.valueOf(numVals));
         ResponseMessage responseMessage = new ResponseMessage();
         for (BranchDiffLibrary.MessageStruct val : vals) {
             if (val.name == null) break;
@@ -94,19 +96,22 @@ public class RestService {
         writeJson(fileName, responseMessage);
     }
 
-    public String branchDiff (String branch1, String branch2, String fileName) {
+    public void branchDiff (String branch1, String branch2, String fileName) {
+        
+        RestclientApplication.logger.info("Retrieving \"" + branch1 + "\" packages...");
         BranchBinaryPackagesMessage firstPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch1)
         .retrieve().body(BranchBinaryPackagesMessage.class);
+        RestclientApplication.logger.info("Retrieved " + String.valueOf(firstPackagesMessage.getLength()) + " packages");
 
+        RestclientApplication.logger.info("Retrieving \"" + branch2 + "\" packages...");
         BranchBinaryPackagesMessage secondPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch2)
         .retrieve().body(BranchBinaryPackagesMessage.class);
-        
-        presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        RestclientApplication.logger.info("Retrieved " + String.valueOf(secondPackagesMessage.getLength()) + " packages");
 
-        return "JSON writed to " + fileName;
+        presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
     }
 
-    public String branchDiff (String branch1, String branch2, String arch, String fileName) {
+    public void branchDiff (String branch1, String branch2, String arch, String fileName) {
         BranchBinaryPackagesMessage firstPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch1 + "?arch=" + arch)
         .retrieve().body(BranchBinaryPackagesMessage.class);
 
@@ -114,8 +119,6 @@ public class RestService {
         .retrieve().body(BranchBinaryPackagesMessage.class);
         
         presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
-
-        return "JSON writed to " + fileName;
     }
 
     private void versionDiff (BranchBinaryPackagesMessage firstPackagesMessage, BranchBinaryPackagesMessage secondPackagesMessage, String fileName) {
@@ -146,7 +149,10 @@ public class RestService {
         
         PointerByReference valsRefPtr = new PointerByReference();
         IntByReference numValsRef = new IntByReference();
+        
+        RestclientApplication.logger.info("Calculating...");
         BranchDiffLibrary.INSTANCE.versionDiff(packages1Ref, firstPackagesMessageSize, packages2Ref, secondPackagesMessageSize, valsRefPtr, numValsRef);
+        
         int numVals = numValsRef.getValue();
         Pointer pVals = valsRefPtr.getValue();
         BranchDiffLibrary.MessageStruct valsRef = new BranchDiffLibrary.MessageStruct(pVals);
@@ -162,7 +168,7 @@ public class RestService {
         writeJson(fileName, responseMessage);
     }
 
-    public String branchDiffVersion (String branch1, String branch2, String fileName) {
+    public void branchDiffVersion (String branch1, String branch2, String fileName) {
         BranchBinaryPackagesMessage firstPackagesMessage = restClient().get().uri(baseURI + "/export/branch_binary_packages/" + branch1)
         .retrieve().body(BranchBinaryPackagesMessage.class);
 
@@ -170,8 +176,6 @@ public class RestService {
         .retrieve().body(BranchBinaryPackagesMessage.class);
 
         versionDiff(firstPackagesMessage, secondPackagesMessage, fileName);
-
-        return "JSON writed to " + fileName;
     }
 
     @Bean
