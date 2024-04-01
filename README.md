@@ -88,5 +88,5 @@ But combinedBranchDiff using different structure:
 
 ## Install
 
-1. You can easily run a built package `java -jar restclient-*.jar
+1. You can easily run a built package `java -jar restclient-*.jar`
 2. Or you can run on yourself. For this, run `./mvnw spring-boot:run`
