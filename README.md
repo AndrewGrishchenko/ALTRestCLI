@@ -1,6 +1,7 @@
 # ALTRestCLI
 
 A CLI for comparing ALTRepo branches
+This program needs [libbranchdiff](https://github.com/AndrewGrishchenko/BranchDiffLib) to work
 
 ## Commands
 1. branchDiff
