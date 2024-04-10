@@ -100,7 +100,7 @@ public class RestService {
         PointerByReference valsRefPtr = new PointerByReference();
         IntByReference numValsRef = new IntByReference();
 
-        RestclientApplication.logger.info("Calculating presence...");
+        RestclientApplication.logger.info("Calculating presence difference...");
         BranchDiffLibrary.INSTANCE.presenceDiff(packages1Ref, firstPackagesMessageSize, packages2Ref, secondPackagesMessageSize, valsRefPtr, numValsRef);
         
         int numVals = numValsRef.getValue();
@@ -185,7 +185,7 @@ public class RestService {
         PointerByReference valsRefPtr = new PointerByReference();
         IntByReference numValsRef = new IntByReference();
         
-        RestclientApplication.logger.info("Calculating version...");
+        RestclientApplication.logger.info("Calculating version difference...");
         BranchDiffLibrary.INSTANCE.versionDiff(packages1Ref, firstPackagesMessageSize, packages2Ref, secondPackagesMessageSize, valsRefPtr, numValsRef);
         
         int numVals = numValsRef.getValue();
