@@ -75,8 +75,10 @@ public class RestService {
 
         for (int i = 0; i < firstPackagesMessageSize; i++) {
             packages1[i].name = firstPackagesList.get(i).getName();
-            packages1[i].arch = firstPackagesList.get(i).getArch();
+            packages1[i].epoch = firstPackagesList.get(i).getEpoch();
             packages1[i].version = firstPackagesList.get(i).getVersion();
+            packages1[i].release = firstPackagesList.get(i).getRelease();
+            packages1[i].arch = firstPackagesList.get(i).getArch();
         }
 
 
@@ -88,8 +90,10 @@ public class RestService {
 
         for (int i = 0; i < secondPackagesMessageSize; i++) {
             packages2[i].name = secondPackagesList.get(i).getName();
-            packages2[i].arch = secondPackagesList.get(i).getArch();
+            packages2[i].epoch = secondPackagesList.get(i).getEpoch();
             packages2[i].version = secondPackagesList.get(i).getVersion();
+            packages2[i].release = secondPackagesList.get(i).getRelease();
+            packages2[i].arch = secondPackagesList.get(i).getArch();
         }
 
 
@@ -157,8 +161,10 @@ public class RestService {
 
         for (int i = 0; i < firstPackagesMessageSize; i++) {
             packages1[i].name = firstPackagesList.get(i).getName();
-            packages1[i].arch = firstPackagesList.get(i).getArch();
+            packages1[i].epoch = firstPackagesList.get(i).getEpoch();
             packages1[i].version = firstPackagesList.get(i).getVersion();
+            packages1[i].release = firstPackagesList.get(i).getRelease();
+            packages1[i].arch = firstPackagesList.get(i).getArch();
         }
 
 
@@ -170,8 +176,10 @@ public class RestService {
 
         for (int i = 0; i < secondPackagesMessageSize; i++) {
             packages2[i].name = secondPackagesList.get(i).getName();
-            packages2[i].arch = secondPackagesList.get(i).getArch();
+            packages2[i].epoch = secondPackagesList.get(i).getEpoch();
             packages2[i].version = secondPackagesList.get(i).getVersion();
+            packages2[i].release = secondPackagesList.get(i).getRelease();
+            packages2[i].arch = secondPackagesList.get(i).getArch();
         }
         
         PointerByReference valsRefPtr = new PointerByReference();

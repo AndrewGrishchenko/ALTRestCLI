@@ -12,13 +12,15 @@ public interface BranchDiffLibrary extends Library {
     BranchDiffLibrary INSTANCE = (BranchDiffLibrary)
             Native.load("libbranchdiff", BranchDiffLibrary.class);
 
-    @FieldOrder({"name", "arch", "version"})
+    @FieldOrder({"name", "epoch", "version", "release", "arch"})
     public static class MessageStruct extends Structure {
         public static class ByReference extends MessageStruct implements Structure.ByReference {}
 
         public String name;
-        public String arch;
+        public int epoch;
         public String version;
+        public String release;
+        public String arch;
 
         public MessageStruct() {}
         public MessageStruct(Pointer p) {
