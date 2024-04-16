@@ -92,3 +92,6 @@ But combinedBranchDiff using different structure:
 
 1. You can easily run a built package `java -jar restclient-*.jar`
 2. Or you can run on yourself. For this, run `./mvnw spring-boot:run`
+
+### Note
+As tested on ALT Linux, you need java-17-openjdk-devel package to build from source
