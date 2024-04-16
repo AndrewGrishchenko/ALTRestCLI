@@ -10,7 +10,7 @@ import com.sun.jna.ptr.PointerByReference;
 
 public interface BranchDiffLibrary extends Library {
     BranchDiffLibrary INSTANCE = (BranchDiffLibrary)
-            Native.load("libbranchdiff", BranchDiffLibrary.class);
+            Native.load("branchdiff", BranchDiffLibrary.class);
 
     @FieldOrder({"name", "epoch", "version", "release", "arch"})
     public static class MessageStruct extends Structure {
