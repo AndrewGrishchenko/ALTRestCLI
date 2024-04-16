@@ -80,7 +80,7 @@ But combinedBranchDiff using different structure:
           "arch": "String",
           "disttag": "String",
           "buildtime": 0,
-          "ource": "String"
+          "source": "String"
         } ]
       }
     }
