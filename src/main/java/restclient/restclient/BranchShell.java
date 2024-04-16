@@ -10,6 +10,12 @@ public class BranchShell {
 
     public BranchShell (RestService restService) {
         this.restService = restService;
+        try {
+            BranchDiffLibrary INSTANCE = BranchDiffLibrary.INSTANCE;
+        } catch (UnsatisfiedLinkError e) {
+            RestclientApplication.logger.error("Unable to load \"branchdiff\" library. Exiting");
+            System.exit(1);
+        }
     }
 
     @ShellMethod(key = "branchDiff", value = "writes json containing all packages present in first branch, but not in second")
