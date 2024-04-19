@@ -112,7 +112,14 @@ public class RestService {
         ResponseMessage responseMessage = new ResponseMessage("presence");
         for (BranchDiffLibrary.MessageStruct val : vals) {
             if (val.name == null) break;
-            responseMessage.addPackage(firstPackagesMessage.getPackageByNameArch(new NameArchPair(val.name, val.arch)));
+            
+            PackageMessage currentPackage = firstPackagesMessage.getPackageByNameArch(new NameArchPair(val.name, val.arch));
+            if (currentPackage == null) {
+                RestclientApplication.logger.warn("Skipping \"" + val.name + ":" + val.arch + "\" package due to internal error");
+                continue;
+            }
+
+            responseMessage.addPackage(currentPackage);
         }
 
         BranchDiffLibrary.INSTANCE.cleanupMessageStruct(pVals);
@@ -197,7 +204,14 @@ public class RestService {
         ResponseMessage responseMessage = new ResponseMessage("version");
         for (BranchDiffLibrary.MessageStruct val : vals) {
             if (val.name == null) break;
-            responseMessage.addPackage(firstPackagesMessage.getPackageByNameArch(new NameArchPair(val.name, val.arch)));
+            
+            PackageMessage currentPackage = firstPackagesMessage.getPackageByNameArch(new NameArchPair(val.name, val.arch));
+            if (currentPackage == null) {
+                RestclientApplication.logger.warn("Skipping \"" + val.name + ":" + val.arch + "\" package due to internal error");
+                continue;
+            }
+
+            responseMessage.addPackage(currentPackage);
         }
 
         BranchDiffLibrary.INSTANCE.cleanupMessageStruct(pVals);

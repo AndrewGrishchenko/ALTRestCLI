@@ -37,6 +37,7 @@ public class BranchBinaryPackagesMessage {
     public void setPackages (List<PackageMessage> packages) {
         this.packages = packages;
         for (PackageMessage pkg : packages) {
+            if (pkg == null) continue;
             packagesMap.put(new NameArchPair(pkg.getName(), pkg.getArch()), pkg);
         }
     }
