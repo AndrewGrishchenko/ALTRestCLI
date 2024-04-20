@@ -17,6 +17,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 
+import restclient.restclient.exceptions.MessageCorruptRuntmeException;
 import restclient.restclient.models.BranchBinaryPackagesMessage;
 import restclient.restclient.models.CombinedResponseMessage;
 import restclient.restclient.models.NameArchPair;
@@ -27,6 +28,7 @@ import restclient.restclient.models.ResponseMessage;
 public class RestService {
     @Value("https://rdb.altlinux.org/api")
     private String baseURI;
+    private int maxTries = 3;
 
     private void writeJson (String fileName, ResponseMessage responseMessage) {
         try {
@@ -115,8 +117,7 @@ public class RestService {
             
             PackageMessage currentPackage = firstPackagesMessage.getPackageByNameArch(new NameArchPair(val.name, val.arch));
             if (currentPackage == null) {
-                RestclientApplication.logger.warn("Skipping \"" + val.name + ":" + val.arch + "\" package due to internal error");
-                continue;
+                throw new MessageCorruptRuntmeException();
             }
 
             responseMessage.addPackage(currentPackage);
@@ -138,7 +139,20 @@ public class RestService {
         .retrieve().body(BranchBinaryPackagesMessage.class);
         RestclientApplication.logger.info("Retrieved " + String.valueOf(secondPackagesMessage.getLength()) + " packages");
 
-        ResponseMessage responseMessage = presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        int count = 0;
+        ResponseMessage responseMessage;
+        while (true) {
+            try {
+                count++;
+                responseMessage = presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+                break;
+            } catch (MessageCorruptRuntmeException e) {
+                if (count == maxTries) {
+                    RestclientApplication.logger.error("Error with library processing. Stopping");
+                    return;
+                }
+            }
+        }
         responseMessage.setBranches(branch1, branch2);
         writeJson(fileName, responseMessage);
     }
@@ -154,7 +168,20 @@ public class RestService {
         .retrieve().body(BranchBinaryPackagesMessage.class);
         RestclientApplication.logger.info("Retrieved " + String.valueOf(secondPackagesMessage.getLength()) + " packages");
         
-        ResponseMessage responseMessage = presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        int count = 0;
+        ResponseMessage responseMessage;
+        while (true) {
+            try {
+                count++;
+                responseMessage = presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+                break;
+            } catch (MessageCorruptRuntmeException e) {
+                if (count == maxTries) {
+                    RestclientApplication.logger.error("Error with library processing. Stopping");
+                    return;
+                }
+            }
+        }
         responseMessage.setBranches(branch1, branch2);
         writeJson(fileName, responseMessage);
     }
@@ -207,8 +234,7 @@ public class RestService {
             
             PackageMessage currentPackage = firstPackagesMessage.getPackageByNameArch(new NameArchPair(val.name, val.arch));
             if (currentPackage == null) {
-                RestclientApplication.logger.warn("Skipping \"" + val.name + ":" + val.arch + "\" package due to internal error");
-                continue;
+                throw new MessageCorruptRuntmeException();
             }
 
             responseMessage.addPackage(currentPackage);
@@ -230,7 +256,20 @@ public class RestService {
         .retrieve().body(BranchBinaryPackagesMessage.class);
         RestclientApplication.logger.info("Retrieved " + String.valueOf(secondPackagesMessage.getLength()) + " packages");
 
-        ResponseMessage responseMessage = versionDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+        int count = 0;
+        ResponseMessage responseMessage;
+        while (true) {
+            try {
+                count++;
+                responseMessage = versionDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+                break;
+            } catch (MessageCorruptRuntmeException e) {
+                if (count == maxTries) {
+                    RestclientApplication.logger.error("Error with library processing. Stopping");
+                    return;
+                }
+            }
+        }
         responseMessage.setBranches(branch1, branch2);
         writeJson(fileName, responseMessage);
     }
@@ -248,14 +287,27 @@ public class RestService {
 
         CombinedResponseMessage combinedResponseMessage = new CombinedResponseMessage();
 
-        ResponseMessage presenceResponse1 = presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
-        presenceResponse1.setBranches(branch1, branch2);
+        int count = 0;
+        ResponseMessage presenceResponse1, presenceResponse2, versionResponse;
+        while (true) {
+            try {
+                count++;
+                presenceResponse1 = presenceDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+                presenceResponse1.setBranches(branch1, branch2);
 
-        ResponseMessage presenceResponse2 = presenceDiff(secondPackagesMessage, firstPackagesMessage, fileName);
-        presenceResponse2.setBranches(branch2, branch1);
+                presenceResponse2 = presenceDiff(secondPackagesMessage, firstPackagesMessage, fileName);
+                presenceResponse2.setBranches(branch2, branch1);
 
-        ResponseMessage versionResponse = versionDiff(firstPackagesMessage, secondPackagesMessage, fileName);
-        versionResponse.setBranches(branch1, branch2);
+                versionResponse = versionDiff(firstPackagesMessage, secondPackagesMessage, fileName);
+                versionResponse.setBranches(branch1, branch2);
+                break;
+            } catch (MessageCorruptRuntmeException e) {
+                if (count == maxTries) {
+                    RestclientApplication.logger.error("Error with library processing. Stopping");
+                    return;
+                }
+            }
+        }
 
         combinedResponseMessage.addResponses(presenceResponse1, presenceResponse2, versionResponse);
         writeJson(fileName, combinedResponseMessage);
